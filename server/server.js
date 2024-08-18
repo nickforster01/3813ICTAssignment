@@ -16,8 +16,23 @@ mongoose.connect('mongodb://localhost/chat-system', {
 app.use(express.json());
 app.use('/api', routes);
 
+// Socket.io setup
 io.on('connection', (socket) => {
   console.log('New client connected');
+
+  // Join a chat channel
+  socket.on('join', (channel) => {
+    socket.join(channel);
+    console.log(`Client joined channel: ${channel}`);
+  });
+
+  // Handle incoming messages
+  socket.on('message', (data) => {
+    io.to(data.channel).emit('message', data.message);
+    console.log(`Message sent to channel ${data.channel}: ${data.message}`);
+  });
+
+  // Handle client disconnection
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
