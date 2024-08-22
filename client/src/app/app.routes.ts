@@ -1,16 +1,12 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from './login/login.component';
+import { Routes } from '@angular/router';
 import { ChatComponent } from './chat/chat.component';
+import { VideoChatComponent } from './video-chat/video-chat.component';
+import { GroupManagementComponent } from './group-management/group-management.component';
+import { UserManagementComponent } from './user-management/user-management.component';
 
-const routes: Routes = [
-  { path: 'login', component: LoginComponent },
+export const routes: Routes = [
   { path: 'chat', component: ChatComponent },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'video-chat', component: VideoChatComponent },
+  { path: 'group-management', component: GroupManagementComponent },
+  { path: 'user-management', component: UserManagementComponent },
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
-})
-export class AppRoutingModule {}
