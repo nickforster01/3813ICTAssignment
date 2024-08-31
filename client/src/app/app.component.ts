@@ -54,7 +54,13 @@ export class AppComponent {
   }
 
   login() {
-    if (this.username === 'super' && this.password === '123') {
+    const user = this.users.find(u => u.username === this.username && u.password === this.password);
+    if (user) {
+      this.isAuthenticated = true;
+      this.userRole = user.role;
+      this.loginError = null;
+      this.navigateTo('home'); // Redirect to home after successful login
+    } else if (this.username === 'super' && this.password === '123') {
       this.isAuthenticated = true;
       this.userRole = 'superAdmin'; // Set role for Super Admin
       this.loginError = null;
@@ -62,12 +68,6 @@ export class AppComponent {
     } else if (this.username === 'group' && this.password === '123') {
       this.isAuthenticated = true;
       this.userRole = 'groupAdmin'; // Set role for Group Admin
-      this.loginError = null;
-      this.navigateTo('home'); // Redirect to home after successful login
-    } else if (this.username === 'chat' && this.password === '123') {
-      this.isAuthenticated = true;
-      this.userRole = 'chatUser'; // Set role for Chat User
-      this.chatUser = this.getOrCreateChatUser(this.username);
       this.loginError = null;
       this.navigateTo('home'); // Redirect to home after successful login
     } else {
@@ -312,12 +312,13 @@ export class AppComponent {
     }
   }
 
-  users: { username: string, role: 'chatUser' | 'groupAdmin' | 'superAdmin' }[] = [];
+  users: { username: string, password: string, role: 'chatUser' | 'groupAdmin' | 'superAdmin' }[] = [];
 
   createUser() {
     const newUsername = prompt('Enter a new username:');
-    if (newUsername) {
-      this.users.push({ username: newUsername, role: 'chatUser' });
+    const newPassword = prompt('Enter a password for the new user:');
+    if (newUsername && newPassword) {
+      this.users.push({ username: newUsername, password: newPassword, role: 'chatUser' });
       console.log('User created:', newUsername);
     }
   }
@@ -338,6 +339,21 @@ export class AppComponent {
         userToPromote.role = 'groupAdmin';
         console.log('User promoted:', usernameToPromote);
       }
+    }
+  }
+
+  register() {
+    const newUsername = prompt('Enter a new username:');
+    const newPassword = prompt('Enter a password for the new user:');
+    if (newUsername && newPassword) {
+      const newUser = { username: newUsername, password: newPassword, role: 'chatUser' as 'chatUser' };
+      this.users.push(newUser);
+      console.log('User registered:', newUsername);
+  
+      // Log in to the newly created account
+      this.username = newUsername;
+      this.password = newPassword;
+      this.login();
     }
   }
 
