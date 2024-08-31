@@ -342,11 +342,28 @@ export class AppComponent {
     }
   }
 
+  demoteUser() {
+    const usernameToDemote = prompt('Enter the username to demote:');
+    if (usernameToDemote) {
+      const userToDemote = this.users.find(user => user.username === usernameToDemote);
+      if (userToDemote) {
+        userToDemote.role = 'chatUser';
+        console.log('User Demoted:', usernameToDemote);
+      }
+    }
+  }
+
   register() {
     const newUsername = prompt('Enter a new username:');
     const newPassword = prompt('Enter a password for the new user:');
     if (newUsername && newPassword) {
-      const newUser = { username: newUsername, password: newPassword, role: 'chatUser' as 'chatUser' };
+      const newUser = {
+        username: newUsername,
+        publicUsername: newUsername, // Add publicUsername property
+        groups: [], // Add groups property
+        password: newPassword,
+        role: 'chatUser' as 'chatUser'
+      };
       this.users.push(newUser);
       console.log('User registered:', newUsername);
   
@@ -354,8 +371,12 @@ export class AppComponent {
       this.username = newUsername;
       this.password = newPassword;
       this.login();
+  
+      // Update this.chatUser with the new user's information
+      this.chatUser = newUser;
     }
   }
+  
 
   sendMessage(groupName: string, channelName: string) {
     const channel = this.getChannel(groupName, channelName);

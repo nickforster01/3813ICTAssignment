@@ -184,6 +184,7 @@
     <button (click)="createUser()">Create User</button>
     <button (click)="deleteUser()">Delete User</button>
     <button (click)="promoteUser()">Promote User</button>
+    <button (click)="demoteUser()">Demote User</button>
     <ul>
       <li *ngFor="let user of users">{{ user.username }} ({{ user.role }})</li>
     </ul>
