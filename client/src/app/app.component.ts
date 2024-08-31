@@ -22,7 +22,7 @@ import { ChatComponent } from './chat/chat.component';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  title = 'My Application';
+  title = 'Chat Application';
   companyName: string = 'Your Company Name';
   currentSection: string = 'home';
   isAuthenticated: boolean = false;
