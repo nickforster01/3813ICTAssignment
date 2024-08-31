@@ -79,7 +79,7 @@
         </ul>
       </div>
     </section>
-
+    
     <!-- Chat Section -->
 <section *ngIf="isAuthenticated && currentSection === 'chat'" class="chat-section">
   <h2>Chat Window</h2>
@@ -198,21 +198,6 @@
     </section>
   </main>
 
-  <!-- Admin Chat Messages View -->
-<div *ngIf="userRole === 'superAdmin'">
-  <h3>Chat Messages</h3>
-  <div *ngFor="let group of groups">
-    <h4>{{ group.name }}</h4>
-    <div *ngFor="let channel of group.channels">
-      <h5>{{ channel.name }}</h5>
-      <div *ngIf="channelMessages[channel.name]">
-        <div *ngFor="let message of channelMessages[channel.name]">
-          <p>{{ message.username }}: {{ message.text }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
   <!-- Footer Section -->
   <footer class="app-footer" *ngIf="isAuthenticated">

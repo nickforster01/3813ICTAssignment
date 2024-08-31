@@ -44,8 +44,6 @@ export class AppComponent {
   initializeGroups() {
     // Sample groups initialized for demonstration
     this.groups = [
-      { name: 'Group 1', channels: [{ name: 'Channel 1 of Group 1', members: [] }], members: [], requests: [] },
-      { name: 'Group 2', channels: [{ name: 'Channel 1 of Group 2', members: [] }], members: [], requests: [] }
     ];
   }
 
@@ -111,11 +109,10 @@ export class AppComponent {
   }
 
   // Group Management functions
-  createGroup() {
-    const newGroupName = `Group ${this.groups.length + 1}`;
-    this.groups.push({ name: newGroupName, channels: [], members: [], requests: [] });
-    console.log('Creating group...', newGroupName);
-  }
+  createGroup(groupName: string = `Group ${this.groups.length + 1}`) {
+  this.groups.push({ name: groupName, channels: [], members: [], requests: [] });
+  console.log(`Group created: ${groupName}`);
+}
 
   createChannel(groupName: string) {
     const group = this.groups.find(g => g.name === groupName);
