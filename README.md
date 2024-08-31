@@ -23,7 +23,7 @@ Users are uniquely identified by their username, email, assigned roles, and asso
 Users can opt to join or leave groups and participate in channels within their groups.
 Account deletion and logout functionalities are available for users.
 # User Roles and Responsibilities
-Super Administrator
+## Super Administrator
 - Empowered to promote users to the roles of Group Admin or Super Admin.
 - Capable of removing users and performing all actions available to Group Admins.
 - Has unrestricted access to all groups and channels.
