@@ -1,9 +1,10 @@
 # 3813ICTAssignment
-Chat System
-Overview
+# Chat System
+# Overview
+
 This project is a comprehensive text and video chat platform enabling real-time communication among users across various groups and channels. It is developed using the MEAN stack (MongoDB, Express, Angular, Node.js), with Socket.io for real-time messaging and Peer.js for video streaming capabilities.
 
-Key Features
+# Key Features
 The chat system supports three distinct user roles:
 
 Super Admin
