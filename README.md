@@ -43,30 +43,30 @@ Upon successful authentication, users gain access to functionalities based on th
 In the initial phase, browser-based local storage is utilized for managing data structures.
 In the subsequent phase, MongoDB will be implemented to provide persistent storage solutions.
 # Documentation
-Repository Structure and Workflow
+## Repository Structure and Workflow
 - Branching Model: The project employs a feature-based branching strategy, where each new feature or bug fix is developed in a separate branch.
 - Commit Policy: Regular commits are made to the repository to document progress and maintain a comprehensive history of changes.
 - Directory Structure:
 - server/: Hosts the Node.js backend, including Express routes, Socket handlers, and Peer.js integration.
 - client/: Contains the Angular frontend, comprising components, services, and models.
-Data Models
+## Data Models
 - User: { username: string, email: string, id: string, roles: string[], groups: string[] }
 - Group: { id: string, name: string, adminIds: string[], channelIds: string[] }
 - Channel: { id: string, groupId: string, name: string, userIds: string[] }
-Angular Application Structure
+## Angular Application Structure
 - Components: LoginComponent, GroupComponent, ChannelComponent, ChatComponent, AdminDashboardComponent
 - Services: AuthService, GroupService, ChannelService, ChatService
 - Models: User, Group, Channel
-Routes:
+## Routes:
 - /login: Displays the login interface.
 - /groups: Shows the groups associated with the logged-in user.
 - /channels/:groupId: Displays channels within a specific group.
 - /chat/:channelId: Presents the chat interface for a selected channel.
 - /admin: Provides the admin dashboard for Super Admins and Group Admins.
-Backend Architecture
+## Backend Architecture
 - Modules: auth.js, groups.js, channels.js, chat.js, admin.js
 - Core Functions: login, register, createGroup, deleteGroup, createChannel, deleteChannel, sendMessage, promoteUser
-Files:
+## Files:
 - server.js: The main entry point for the Node.js application.
 - routes/: Contains route handlers for various functionalities.
 - models/: Houses Mongoose models (applicable in the second phase).
@@ -87,7 +87,7 @@ API Endpoints
 - Channel Management: Admins manage channels within a group using ChannelService. The server processes updates, and the Angular frontend reflects changes in the channel list.
 - Chat Functionality: Messages are handled through ChatService using Socket.io. The server broadcasts messages to all users in the channel, and the Angular application updates the chat display in real-time.
 # Getting Started
-Requirements:
+## Requirements:
 - Node.js
 - Angular CLI
 - MongoDB (Which will be initialiseed and phased in Assignment Part 2 deployment)
@@ -96,11 +96,11 @@ Requirements:
 - Navigate to the project directories:
 - cd server: To set up the backend.
 - cd client: To set up the frontend.
-Install dependencies for both server and client:
+## Install dependencies for both server and client:
 - Run npm install in both directories.
 - Start the backend server:
 - Execute npm start from the server directory.
-Start the frontend client:
+## Start the frontend client:
 - Run ng serve in the client directory.
 - Access the application at http://localhost:4200.
 
