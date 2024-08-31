@@ -177,14 +177,17 @@
     </section>
 
     <!-- User Management Section -->
-    <section *ngIf="isAuthenticated && currentSection === 'user-management'" class="user-management-section">
-      <h2>User Management</h2>
-      <div *ngIf="userRole === 'superAdmin'">
-        <button (click)="createUser()">Create User</button>
-        <button (click)="deleteUser()">Delete User</button>
-        <button (click)="promoteUser()">Promote User</button>
-      </div>
-    </section>
+<section *ngIf="isAuthenticated && currentSection === 'user-management'" class="user-management-section">
+  <h2>User Management</h2>
+  <div *ngIf="userRole === 'superAdmin'">
+    <button (click)="createUser()">Create User</button>
+    <button (click)="deleteUser()">Delete User</button>
+    <button (click)="promoteUser()">Promote User</button>
+    <ul>
+      <li *ngFor="let user of users">{{ user.username }} ({{ user.role }})</li>
+    </ul>
+  </div>
+</section>
 
     <!-- Video Chat Section -->
     <section *ngIf="isAuthenticated && currentSection === 'video-chat'" class="video-chat-section">

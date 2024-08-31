@@ -312,16 +312,33 @@ export class AppComponent {
     }
   }
 
+  users: { username: string, role: 'chatUser' | 'groupAdmin' | 'superAdmin' }[] = [];
+
   createUser() {
-    // Implement the logic for creating a user
+    const newUsername = prompt('Enter a new username:');
+    if (newUsername) {
+      this.users.push({ username: newUsername, role: 'chatUser' });
+      console.log('User created:', newUsername);
+    }
   }
 
   deleteUser() {
-    // Implement the logic for deleting a user
+    const usernameToDelete = prompt('Enter the username to delete:');
+    if (usernameToDelete) {
+      this.users = this.users.filter(user => user.username !== usernameToDelete);
+      console.log('User deleted:', usernameToDelete);
+    }
   }
 
   promoteUser() {
-    // Implement the logic for promoting a user
+    const usernameToPromote = prompt('Enter the username to promote:');
+    if (usernameToPromote) {
+      const userToPromote = this.users.find(user => user.username === usernameToPromote);
+      if (userToPromote) {
+        userToPromote.role = 'groupAdmin';
+        console.log('User promoted:', usernameToPromote);
+      }
+    }
   }
 
   sendMessage(groupName: string, channelName: string) {
