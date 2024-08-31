@@ -27,11 +27,11 @@ Account deletion and logout functionalities are available for users.
 - Empowered to promote users to the roles of Group Admin or Super Admin.
 - Capable of removing users and performing all actions available to Group Admins.
 - Has unrestricted access to all groups and channels.
-Group Administrator
+## Group Administrator
 - Responsible for creating and managing groups and channels.
 - Authorized to remove users from the groups they manage.
 - Can ban users from channels and report issues to Super Admins.
-Chat User
+## Chat User
 - Can create a new chat user account.
 - Eligible to join groups and channels.
 - Can express interest in groups and leave groups when desired.
