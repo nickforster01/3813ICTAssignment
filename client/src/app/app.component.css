@@ -9,7 +9,7 @@ body {
 
 h1, h2, h3 {
   font-family: 'Montserrat', sans-serif; /* Better font for titles */
-  color: #333;
+  color: #000000;
 }
 
 .login-container {
@@ -86,7 +86,7 @@ button:hover {
 }
 
 .app-header {
-  background-color: #72c9f7; /* Light Blue color */
+  background-color: #b3601d; /* Light Blue color */
   color: #fff;
   padding: 1rem;
   text-align: center;
@@ -141,7 +141,7 @@ button:hover {
 }
 
 .app-footer {
-  background-color: #72c9f7; /* Matching warm orange color */
+  background-color: #b3601d; /* Matching warm orange color */
   color: #fff;
   text-align: center;
   padding: 1rem;
@@ -173,13 +173,13 @@ button:hover {
   }
   
   .chat-section input[type="text"]:focus {
-    border-color: #66afe9; 
+    border-color: #b3601d; 
     outline: none;         
   }
   
   .chat-section button {
     padding: 10px 15px;   
-    background-color: #007bff; 
+    background-color: #b3601d; 
     color: white;         
     border: none;         
     border-radius: 4px;   
@@ -190,7 +190,7 @@ button:hover {
   }
   
   .chat-section button:hover {
-    background-color: #0056b3;
+    background-color: #b3601d;
   }
   
   .chat-section .chat-messages {
