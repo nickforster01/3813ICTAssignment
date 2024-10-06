@@ -8,11 +8,11 @@
     <!-- Navigation bar -->
     <nav class="navbar">
       <ul>
-        <li><a href="#" (click)="navigateTo('home')">Home</a></li>
-        <li><a href="#" (click)="navigateTo('chat')">Chat</a></li>
-        <li><a href="#" (click)="navigateTo('group-management')">Group Management</a></li>
-        <li><a href="#" (click)="navigateTo('user-management')">User Management</a></li>
-        <li><a href="#" (click)="navigateTo('video-chat')">Video Chat</a></li>
+        <li><a href="#" (click)="navigateTo('home')">Home Page</a></li>
+        <li><a href="#" (click)="navigateTo('chat')">Chat Page</a></li>
+        <li><a href="#" (click)="navigateTo('group-management')">Group Management Page</a></li>
+        <li><a href="#" (click)="navigateTo('user-management')">User Management Page</a></li>
+        <li><a href="#" (click)="navigateTo('video-chat')">Video Chat Page</a></li>
         <li><a href="#" (click)="logout()">Logout</a></li>
       </ul>
     </nav>
@@ -53,7 +53,7 @@
     <section *ngIf="isAuthenticated && currentSection === 'home'" class="home-section">
       <h1>Home Page</h1>
       <!-- Home page content -->
-      <p>The navigation bar above can be used to access different functions within the application.</p>
+      <p>Use the navigation bar above to access different features of this application.</p>
       
       <!-- Chat User Specific Content -->
       <div *ngIf="userRole === 'chatUser'">
@@ -113,7 +113,7 @@
   <div *ngIf="userRole === 'superAdmin'">
     <h3>Your Channels</h3>
     <div class="chat-container">
-      <form (submit)="sendMessage($event)">
+      <form (submit)="sendMessage(username, message)">
         <input
           type="text"
           [(ngModel)]="message"
@@ -126,7 +126,7 @@
     
       <ul class="chat-messages">
         <li *ngFor="let msg of messages">
-          <strong>{{ msg.username }}:</strong> {{ msg.message }}
+          <strong>{{ msg.username }}:</strong> {{ message }}
         </li>
       </ul>
     </div>
@@ -139,7 +139,7 @@
       
       <!-- Display for Group Admin and Super Admin -->
       <div *ngIf="userRole === 'superAdmin' || userRole === 'groupAdmin'">
-        <button (click)="createGroup()">Create Group</button>
+        <button type="button" (click)="createGroup()">Create Group</button>
 
         <!-- Display Created Groups -->
         <div *ngIf="groups.length > 0" class="groups-list">
@@ -147,8 +147,8 @@
           <!-- Loop through each group -->
           <ul>
             <li *ngFor="let group of groups">
-              {{ group.name }}
-              <button (click)="createChannel(group.name)">Create Channel</button>
+              <h3>{{ group.name }}</h3>
+              <button *ngIf="group._id" (click)="createChannel(group._id)">Create Channel</button>
               <button (click)="removeGroup(group.name)">Remove Group</button>
               <!-- Members of Group -->
               <div>

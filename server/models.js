@@ -1,47 +1,44 @@
 const mongoose = require('mongoose');
-const User = require('./user.model');
-
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: String,
-  roles: [String],
-  groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
+  username: { type: String, required: true },
+  email: { type: String, required: true, unique: true }, // Ensure email is unique as well
+  password: { type: String, required: true },
+  role: { type: String, required: true },
+  groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],  // Groups the user belongs to
+  channels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }]  // Channels the user belongs to
 });
 
-const User = mongoose.model('User', userSchema);
 
+// Group Schema
 const groupSchema = new mongoose.Schema({
   name: { type: String, required: true },
   admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   channels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }],
+  memberIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 
+// Channel Schema
 const channelSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
+  name: String,
+  groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
+  members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 
+
+// Message Schema
 const messageSchema = new mongoose.Schema({
   username: { type: String, required: true },
-  message: { type: String, required: true },
+  text: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
-  channel: { type: mongoose.Schema.Types.ObjectId, ref: 'Channel' },
 });
 
-module.exports = {
-  User: mongoose.model('User', userSchema),
-  Group: mongoose.model('Group', groupSchema),
-  Channel: mongoose.model('Channel', channelSchema),
-  Message: mongoose.model('Message', messageSchema),
-  registerUser: (user) => {
-    const newUser = new User(user);
-    newUser.save((err) => {
-      if (err) {
-        console.error(err);
-      } else {
-        console.log('User registered:', user.username);
-      }
-    });
-  }
-};
+// Creating models from the schemas
+const User = mongoose.model('User', userSchema);
+const Group = mongoose.model('Group', groupSchema);
+const Channel = mongoose.model('Channel', channelSchema);
+const Message = mongoose.model('Message', messageSchema);
+
+// Exporting all models
+module.exports = { User, Group, Channel, Message };
