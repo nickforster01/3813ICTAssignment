@@ -12,7 +12,7 @@ export class SocketService {
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     if (isPlatformBrowser(this.platformId)) {
       // Only connect to socket.io when in the browser
-      this.socket = io('http://localhost:3000', {
+      this.socket = io('http://localhost:5000/', {
         transports: ['websocket'],  // Force WebSocket
       });
 

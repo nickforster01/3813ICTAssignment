@@ -1,3 +1,4 @@
+//models.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -16,14 +17,14 @@ const groupSchema = new mongoose.Schema({
   admins: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   channels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }],
   memberIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  requests: { type: [String], default: []},
 });
 
 // Channel Schema
 const channelSchema = new mongoose.Schema({
   name: String,
   groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
-  members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  members:  [{ type: String }] // Store usernames or user IDs
 });
 
 
