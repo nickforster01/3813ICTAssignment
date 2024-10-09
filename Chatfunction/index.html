@@ -1,41 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Socket.IO Chat with Avatar</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
+        /* General Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #b3601d;
+        }
+
+        input, button {
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin: 10px;
+            width: 250px;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #b3601d;
+            outline: none;
+        }
+
+        button {
+            background-color: #b3601d;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #b3601d;
+        }
+
+        .chat-container {
+            width: 500px;
+            max-width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
         .message-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
         }
+
+        .message-container:last-child {
+            border-bottom: none;
+        }
+
         .avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
+            object-fit: cover;
         }
+
         .username {
             font-weight: bold;
+            color: #333;
             margin-right: 5px;
+        }
+
+        .chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        #messageInput {
+            width: calc(100% - 120px);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .controls button {
+            width: 100px;
+        }
+
+        .chat-messages img {
+            max-width: 200px;
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 90%;
+                padding: 15px;
+            }
+
+            input, button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controls button {
+                width: 100%;
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
+
 <body>
-    <input id="usernameInput" placeholder="Enter your username" />
-    <input type="file" id="avatarInput" />
-    <input id="roomInput" placeholder="Enter room name" />
-    <button id="joinRoom">Join Room</button>
+    <div class="chat-container">
+        <h1>Chat Room</h1>
+        <div>
+            <input id="usernameInput" placeholder="Enter your username" />
+            <p></p>
+            Select an Avatar Logo:
+            <p></p>
+            <input type="file" id="avatarInput" />
+            <input id="roomInput" placeholder="Enter room name" />
+            <button id="joinRoom">Join Room</button>
+        </div>
 
-    <div id="chat"></div>
-    
-    <input id="messageInput" placeholder="Type a message" />
-    <button id="sendMessage">Send</button>
+        <div id="chat" class="chat-messages"></div>
 
-    <input type="file" id="imageInput" />
-    <button id="sendImage">Send Image</button>
+        <div class="controls">
+            <input id="messageInput" placeholder="Type a message" />
+            <button id="sendMessage">Send</button>
+            <input type="file" id="imageInput" />
+            <button id="sendImage">Send Image</button>
+        </div>
+    </div>
 
     <script>
         const socket = io();
@@ -48,15 +175,14 @@
 
         let userAvatar = '';
 
-        // Convert avatar to Base64 and store it
         avatarInput.addEventListener('change', () => {
             const file = avatarInput.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onloadend = function () {
-                    userAvatar = reader.result; // Store the avatar as a Base64 string
+                    userAvatar = reader.result;
                 };
-                reader.readAsDataURL(file); // Convert image to Base64
+                reader.readAsDataURL(file);
             }
         });
 
@@ -65,8 +191,8 @@
             const username = usernameInput.value;
             socket.emit('joinRoom', { room, username, avatar: userAvatar });
             roomInput.value = '';
-            usernameInput.disabled = true; // Disable username input after joining
-            avatarInput.disabled = true; // Disable avatar input after joining
+            usernameInput.disabled = true;
+            avatarInput.disabled = true;
         };
 
         socket.on('userConnected', (username) => {
@@ -107,13 +233,12 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onloadend = function () {
-                    socket.emit('image', reader.result); // Send the base64 image string
+                    socket.emit('image', reader.result);
                 };
-                reader.readAsDataURL(file); // Convert image to Base64
+                reader.readAsDataURL(file);
             }
         };
 
-        // Helper functions to generate HTML for messages and images
         function generateMessageHTML(username, message, avatar) {
             return `
                 <div class="message-container">
@@ -134,4 +259,5 @@
         }
     </script>
 </body>
+
 </html>
