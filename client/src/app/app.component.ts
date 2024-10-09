@@ -833,6 +833,13 @@ getMessages(): Observable<any> {
   }
 }
 
+openChatPage() {
+  // Open the localhost:3001 URL in a new pop-up window
+  window.open('http://localhost:3001', '_blank', 'width=800,height=600');
+  // Navigate to the 'chat' section in the main page
+  this.navigateTo('chat');
+}
+
 fetchGroups() {
   this.http.get<Group[]>(`http://localhost:3000/api/groups`).subscribe(
     (data: Group[]) => {
