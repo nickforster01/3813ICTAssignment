@@ -1,4 +1,5 @@
 # 3813ICTAssignment Chat System
+# Part 1
 # Overview
 
 This project is a comprehensive text and video chat platform enabling real-time communication among users across various groups and channels. It is developed using the MEAN stack (MongoDB, Express, Angular, Node.js), with Socket.io for real-time messaging and Peer.js for video streaming capabilities.
@@ -105,8 +106,5 @@ API Endpoints
 - Access the application at http://localhost:4200.
 
 
-
-
-
-
+# Part 2 Assignment
 
