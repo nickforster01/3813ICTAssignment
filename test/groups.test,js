@@ -1,0 +1,165 @@
+// groups.test.js
+import request from 'supertest'; // Import supertest
+import express from 'express'; // Import express
+import mongoose from 'mongoose'; // Import mongoose
+import bodyParser from 'body-parser'; // Import body-parser
+import { expect } from 'chai';
+
+import groupsRouter from './groups.js'; // Adjust the path as necessary with .js
+import { Group, User } from '../models.js'; // Ensure models are correctly imported with .js
+
+// Create Express app
+const app = express();
+
+// Middleware for parsing application/json
+app.use(bodyParser.json());
+app.use(groupsRouter);
+
+// Connect to the test database (make sure to set this up in your MongoDB)
+before(async () => {
+    await mongoose.connect('mongodb://localhost:27017/testdb', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    });
+});
+
+// Clear the database before each test
+beforeEach(async () => {
+    await Group.deleteMany({});
+    await User.deleteMany({});
+});
+
+// Disconnect from database after all tests
+after(async () => {
+    await mongoose.connection.close();
+});
+
+describe('Group Routes', () => {
+    let groupName;
+    let username;
+
+    beforeEach(async () => {
+        // Setup initial data for tests
+        groupName = 'Test Group';
+        username = 'testuser';
+
+        // Create a group for testing
+        const group = new Group({ name: groupName, requests: [] });
+        await group.save();
+
+        // Create a user for testing
+        const user = new User({ username: username });
+        await user.save();
+    });
+
+    describe('POST /requestJoin', () => {
+        it('should send a join request to a group', async () => {
+            const response = await request(app)
+                .post('/requestJoin')
+                .send({ username, groupName });
+
+            expect(response.status).to.equal(200);
+            expect(response.text).to.equal('Join request sent');
+
+            const updatedGroup = await Group.findOne({ name: groupName });
+            expect(updatedGroup.requests).to.include(username);
+        });
+
+        it('should return 404 if group not found', async () => {
+            const response = await request(app)
+                .post('/requestJoin')
+                .send({ username, groupName: 'Nonexistent Group' });
+
+            expect(response.status).to.equal(404);
+            expect(response.text).to.equal('Group not found');
+        });
+    });
+
+    describe('POST /api/groups/approve-request', () => {
+        it('should approve a user joining the group', async () => {
+            await Group.findOneAndUpdate({ name: groupName }, { $push: { requests: username } });
+
+            const response = await request(app)
+                .post('/api/groups/approve-request')
+                .send({ username, groupName });
+
+            expect(response.status).to.equal(200);
+            expect(response.body.message).to.equal('User approved successfully');
+
+            const updatedGroup = await Group.findOne({ name: groupName });
+            expect(updatedGroup.members).to.include(username);
+
+            const updatedUser = await User.findOne({ username });
+            expect(updatedUser.groups).to.include(groupName);
+        });
+
+        it('should return 404 if group not found', async () => {
+            const response = await request(app)
+                .post('/api/groups/approve-request')
+                .send({ username, groupName: 'Nonexistent Group' });
+
+            expect(response.status).to.equal(404);
+            expect(response.body.message).to.equal('Group not found');
+        });
+
+        it('should return 404 if user not found', async () => {
+            await Group.findOneAndUpdate({ name: groupName }, { $push: { requests: username } });
+            const response = await request(app)
+                .post('/api/groups/approve-request')
+                .send({ username: 'Unknown User', groupName });
+
+            expect(response.status).to.equal(404);
+            expect(response.body.message).to.equal('User not found');
+        });
+    });
+
+    describe('POST /api/groups/remove-from-requests', () => {
+        it('should remove a username from the requests array', async () => {
+            await Group.findOneAndUpdate({ name: groupName }, { $push: { requests: username } });
+
+            const response = await request(app)
+                .post('/api/groups/remove-from-requests')
+                .send({ username, groupName });
+
+            expect(response.status).to.equal(200);
+            expect(response.body.message).to.equal('Username removed from requests array');
+
+            const updatedGroup = await Group.findOne({ name: groupName });
+            expect(updatedGroup.requests).to.not.include(username);
+        });
+
+        it('should return 404 if group not found', async () => {
+            const response = await request(app)
+                .post('/api/groups/remove-from-requests')
+                .send({ username, groupName: 'Nonexistent Group' });
+
+            expect(response.status).to.equal(404);
+            expect(response.body.message).to.equal('Group not found');
+        });
+    });
+
+    describe('GET /api/user/requested-groups', () => {
+        it('should return the requested groups for a user', async () => {
+            // Simulate user authentication (this may depend on how your authentication is set up)
+            const userId = (await User.findOne({ username }))._id;
+
+            // Assuming you have a way to simulate the user being authenticated
+            const response = await request(app)
+                .get('/api/user/requested-groups')
+                .set('Authorization', `Bearer YOUR_TOKEN_HERE`); // Adjust based on your auth method
+
+            expect(response.status).to.equal(200);
+            expect(response.body.username).to.equal(username);
+            expect(response.body.groupName).to.equal(undefined); // Adjust based on the setup of requestedGroups
+        });
+
+        it('should return 404 if user not found', async () => {
+            const response = await request(app)
+                .get('/api/user/requested-groups')
+                .set('Authorization', `Bearer INVALID_TOKEN_HERE`); // Invalid token
+
+            expect(response.status).to.equal(404);
+            expect(response.body.message).to.equal('User not found');
+        });
+    });
+});
