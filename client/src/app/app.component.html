@@ -144,6 +144,7 @@
       <!-- Display for Group Admin and Super Admin -->
       <div *ngIf="userRole === 'superAdmin' || userRole === 'groupAdmin'">
         <button type="button" (click)="createGroup()">Create Group</button>
+        <button (click)="deleteGroup()">Delete Group</button>
 
         <!-- Display Created Groups -->
         <div *ngIf="groups.length > 0" class="groups-list">
@@ -153,7 +154,6 @@
             <li *ngFor="let group of groups">
               <h3>{{ group.name }}</h3>
               <button *ngIf="group._id" (click)="createChannel(group._id)">Create Channel</button>
-              <button (click)="removeGroup(group.name)">Remove Group</button>
               <!-- Members of Group -->
               <div>
                 <strong>Members of Group:</strong>
@@ -174,7 +174,9 @@
                     <button (click)="banMember(group.name, channel.name, member)">Ban and Report</button>
                   </li>
                 </ul>
-                <button (click)="removeChannel(group.name, channel.name)">Remove Channel</button>
+                <!-- Example template to display channels -->
+                <button (click)="deleteChannel(channel._id)">Delete Channel</button>
+
               </div>
               <!-- Manage Requests -->
               <div>
@@ -215,12 +217,30 @@
 <section *ngIf="isAuthenticated && currentSection === 'user-management'" class="user-management-section">
   <h1>User Management</h1>
   <div *ngIf="userRole === 'superAdmin'">
-    <button (click)="createUser()">Create User</button>
+    <button (click)="register()">Create User</button>
     <button (click)="deleteUser()">Delete User</button>
     <button (click)="promoteUser()">Promote User</button>
     <button (click)="demoteUser()">Demote User</button>
     <ul>
-      <li *ngFor="let user of users">{{ user.username }} ({{ user.role }})</li>
+      <div>
+        <br>
+        <h2>User List</h2>
+        <br>
+        <table border="1" style="border-collapse: collapse; width: 50%;">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.username }}</td>
+              <td>{{ user.role }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </ul>
   </div>
 </section>

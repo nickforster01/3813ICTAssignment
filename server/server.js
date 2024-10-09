@@ -16,7 +16,7 @@ const channelsRoutes = require('./api/channels');
 // Enable CORS for your entire Express app (optional)
 app.use(cors({
   origin: "http://localhost:4200",  // Allow your Angular app (remove the trailing slash)
-  methods: ["GET", "POST", "PUT", "DELETE"]
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 }));
 
 mongoose.connect('mongodb://localhost:27017/MyDB',{ useNewUrlParser: true, useUnifiedTopology: true })
@@ -166,6 +166,28 @@ app.post('/api/groups/approve-request', async (req, res) => {
   }
 });
 
+app.post('/api/groups/remove-from-requests', async (req, res) => {
+  const { username, groupName } = req.body;
+
+  try {
+      // Use $pull to remove the username from the requests array
+      const updatedGroup = await Group.findOneAndUpdate(
+          { name: groupName },
+          { $pull: { requests: username } },
+          { new: true }
+      );
+
+      if (!updatedGroup) {
+          return res.status(404).json({ message: 'Group not found' });
+      }
+
+      res.status(200).json({ message: 'Username removed from requests array', updatedGroup });
+  } catch (error) {
+      console.error('Error removing username from requests:', error);
+      res.status(500).json({ message: 'An error occurred', error });
+  }
+});
+
 app.post('/api/channels/join', async (req, res) => {
   try {
       const { username, channelId } = req.body;
@@ -214,5 +236,202 @@ app.get('/api/channels', async (req, res) => {
   }
 });
 
+// DELETE endpoint to delete a user account
+// DELETE method to delete a user account
+app.delete('/api/users/deleteAccount/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+      // Remove user from Group and Channel references
+      await Group.updateMany({ 
+          $or: [{ memberIds: userId }, { admins: userId }] 
+      }, {
+          $pull: { memberIds: userId, admins: userId }
+      });
+
+      await Channel.updateMany({ 
+          members: userId 
+      }, {
+          $pull: { members: userId }
+      });
+
+      // Delete the user
+      const user = await User.findByIdAndDelete(userId);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+      res.status(200).json({ message: 'User account deleted successfully' });
+  } catch (error) {
+      console.error('Error deleting account:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// DELETE method to delete a user account based on username
+app.delete('/api/users/deleteUser/:username', async (req, res) => {
+  const username = req.params.username;
+
+  try {
+      // Find the user by username to get their userId
+      const user = await User.findOne({ username: username });
+      
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      const userId = user._id; // Get userId from the user document
+
+      // Remove user from Group and Channel references
+      await Group.updateMany({ 
+          $or: [{ memberIds: userId }, { admins: userId }] 
+      }, {
+          $pull: { memberIds: userId, admins: userId }
+      });
+
+      await Channel.updateMany({ 
+          members: userId 
+      }, {
+          $pull: { members: userId }
+      });
+
+      // Delete the user
+      await User.findByIdAndDelete(userId);
+      
+      res.status(200).json({ message: 'User account deleted successfully' });
+  } catch (error) {
+      console.error('Error deleting account:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.patch('/api/users/promote/:username', async (req, res) => {
+  const { username } = req.params;
+
+  try {
+      // Find the user by username
+      const user = await User.findOne({ username });
+
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Define the role hierarchy
+      const roles = ['chatUser', 'groupAdmin', 'superAdmin'];
+
+      // Get the current role index
+      const currentRoleIndex = roles.indexOf(user.role);
+
+      // Promote the user if not already at the highest role
+      if (currentRoleIndex < roles.length - 1) {
+          user.role = roles[currentRoleIndex + 1];
+          await user.save();
+          return res.status(200).json({ message: `User ${username} promoted to ${user.role}` });
+      } else {
+          return res.status(400).json({ message: 'User is already at the highest role' });
+      }
+  } catch (error) {
+      console.error('Error promoting user:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// PATCH method to demote a user account
+app.patch('/api/users/demote/:username', async (req, res) => {
+  const username = req.params.username;
+
+  try {
+      // Fetch the user by username
+      const user = await User.findOne({ username: username });
+      
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Determine the current role and update to the next lower role
+      const roles = ['chatUser', 'groupAdmin', 'superAdmin'];
+      const currentRoleIndex = roles.indexOf(user.role);
+
+      if (currentRoleIndex === -1) {
+          return res.status(400).json({ message: 'Invalid role' });
+      }
+
+      // If the current role is the lowest, return an error
+      if (currentRoleIndex === 0) {
+          return res.status(400).json({ message: 'User is already at the lowest role' });
+      }
+
+      // Update the user's role to the next lower role
+      user.role = roles[currentRoleIndex - 1];
+      await user.save();
+
+      res.status(200).json({ message: `User ${username} demoted to ${user.role}` });
+  } catch (error) {
+      console.error('Error demoting user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// DELETE method to delete a group
+app.delete('/api/groups/delete/:groupName', async (req, res) => {
+  const groupName = req.params.groupName;
+
+  try {
+      // Find and delete the group by its name
+      const result = await Group.findOneAndDelete({ name: groupName });
+
+      if (!result) {
+          return res.status(404).json({ message: 'Group not found' });
+      }
+
+      res.status(200).json({ message: `Group ${groupName} deleted successfully` });
+  } catch (error) {
+      console.error('Error deleting group:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// DELETE method to delete a channel
+app.delete('/api/channels/delete/:channelId', async (req, res) => {
+  const channelId = req.params.channelId;
+
+  try {
+      // Find the channel and delete it
+      const deletedChannel = await Channel.findByIdAndDelete(channelId);
+      if (!deletedChannel) {
+          return res.status(404).json({ message: 'Channel not found' });
+      }
+
+      // Remove the channel ID from the groups that contain it
+      await Group.updateMany(
+          { channels: channelId }, // Find groups that have the channel
+          { $pull: { channels: channelId } } // Remove the channel ID from the array
+      );
+
+      res.status(200).json({ message: 'Channel deleted successfully' });
+  } catch (error) {
+      console.error('Error deleting channel:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// API route to get all users with their username and role
+app.get('/api/users', async (req, res) => {
+  try {
+      // Find all users and return only 'username' and 'role' fields
+      const users = await User.find({}, 'username role');
+
+      // If no users are found
+      if (!users || users.length === 0) {
+          return res.status(404).json({ message: 'No users found' });
+      }
+
+      // Return the users as a JSON response
+      res.status(200).json(users);
+  } catch (err) {
+      // Log any error and return a 500 status
+      console.error('Error retrieving users:', err);
+      res.status(500).json({ error: 'Failed to retrieve users' });
+  }
+});
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

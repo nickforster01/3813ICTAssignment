@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
+
 interface Channel {
   _id: string;
   name: string;
@@ -35,6 +36,7 @@ _id: string; name: string; members: string[]
   members: string[];
   requests: string[];
 }
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -76,6 +78,9 @@ export class AppComponent implements OnInit {
   channels: Channel[] = [];  // Initialize an empty array or assign the fetched channels
   messageText: string = '';
   currentChannel: string | null = null;
+  router: any;
+  userId: string = '';
+  userService: any;
  
   
   constructor(private socketService: SocketService, private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {
@@ -112,9 +117,30 @@ export class AppComponent implements OnInit {
       response => {
         console.log('Request approved!', response); // Log the response
         // Handle successful approval, e.g., show a message or refresh the list of requests
+        // Remove the approved request from the group.requests array
+        const group = this.groups.find(g => g.name === groupName);
+        if (group) {
+          group.requests = group.requests.filter(request => request !== username);
+        }
       },
       error => {
         console.error('Error approving request', error); // Log the error
+        // Handle the error, e.g., show an error message
+      }
+    );
+
+    this.http.post(`http://localhost:3000/api/groups/remove-from-requests`, payload).subscribe(
+      response => {
+        console.log('deleted user!', response); // Log the response
+        // Handle successful approval, e.g., show a message or refresh the list of requests
+        // Remove the approved request from the group.requests array
+        const group = this.groups.find(g => g.name === groupName);
+        if (group) {
+          group.requests = group.requests.filter(request => request !== username);
+        }
+      },
+      error => {
+        console.error('Error deleting user', error); // Log the error
         // Handle the error, e.g., show an error message
       }
     );
@@ -276,6 +302,7 @@ createGroup(groupName: string = `Group ${this.groups.length + 1}`) {
         // Now update the local state
         this.groups.push(newGroup);  // Add the group to the list only after it's successfully created in the DB
         console.log('Group created successfully:', response);
+        alert ('Group created successfully');
       },
       (error) => {
         console.error('Error creating group:', error);
@@ -301,6 +328,7 @@ createChannel(groupId: string) {
                   const createdChannel = { ...response }; // Assuming the backend returns the created channel with an _id
                   group.channels.push(createdChannel);
                   console.log(`Channel created: ${createdChannel.name} in Group ${group.name}`);
+                  alert ('Channel created successfully');
               },
               (error) => {
                   console.error('Error creating channel:', error);
@@ -317,19 +345,30 @@ createChannel(groupId: string) {
     console.log('Removing group:', groupName);
   }
 
-  removeChannel(groupName: string, channelName: string) {
-    const group = this.groups.find(g => g.name === groupName);
-    if (group) {
-      group.channels = group.channels.filter(c => c.name !== channelName);
-      console.log('Removing channel:', channelName, 'from', groupName);
+  deleteChannel(channelId: string) {
+    if (confirm('Are you sure you want to delete this channel?')) {
+        this.http.delete(`http://localhost:3000/api/channels/delete/${channelId}`).subscribe(
+            (response: any) => {
+                console.log('Response from deleteChannel:', response);
+                // Remove the deleted channel from the channels array
+                this.channels = this.channels.filter(channel => channel._id !== channelId);
+                alert(`Channel with ID ${channelId} has been deleted successfully.`);
+            },
+            (error: any) => {
+                console.error('Error deleting channel:', error);
+                alert(`Error deleting channel. Please try again.`);
+            }
+        );
     }
-  }
+}
+
   joinGroup(groupName: string) {
     const userId = localStorage.getItem('userId'); // Get userId from localStorage
     this.http.post('http://localhost:3000/api/join-group', { userId, groupName })
       .subscribe(
         (response: any) => {
           console.log('Joined group successfully:', response);
+          alert('Joined group successfully');
         },
         (error) => {
           console.error('Error joining group:', error);
@@ -343,6 +382,7 @@ createChannel(groupId: string) {
     this.http.post('http://localhost:3000/api/channels/join', payload).subscribe(
       (response) => {
         console.log('Joined channel successfully!', response);
+        alert('Joined channel successfully');
 
         const channel = this.channels.find(c => c._id === channelId);
         if (channel && !channel.members.includes(this.username)) {
@@ -386,6 +426,7 @@ joinGroupRequest(groupName: string) {
     }).pipe(
       tap(response => {
         console.log('Join request sent successfully:', response);
+        alert('Join request sent successfully');
       }),
       catchError(error => {
         console.error('Error sending join request:', error);
@@ -440,15 +481,53 @@ joinGroupRequest(groupName: string) {
   }
 
   deleteAccount() {
-    if (this.chatUser) {
-      if (confirm('Are you sure you want to delete your account?')) {
-        console.log('Deleting account for user:', this.chatUser.username);
-        this.logout();
-      } else {
-        console.log('Account deletion cancelled.');
-      }
+    const userId = localStorage.getItem('userId');
+
+    console.log('Delete Account button clicked');
+    console.log('Current User ID:', userId); // Check the user ID being passed
+
+    if (userId) {
+        this.http.delete(`http://localhost:3000/api/users/deleteAccount/${userId}`).subscribe(
+            (response: any) => {
+                console.log('Response from deleteAccount:', response);
+                alert('Account Deleted');
+                // Refresh the page after a successful delete
+                location.reload();
+            },
+            (error: any) => {
+                console.error('Error deleting account:', error);
+            }
+        );
+    } else {
+        console.error('No user ID found in localStorage');
     }
+}
+
+deleteUser() {
+  const usernameToDelete = prompt('Enter the username to delete:');
+
+  console.log('Username to delete:', usernameToDelete);
+
+  if (usernameToDelete) {
+      // Replace the placeholder with the actual username
+      this.http.delete(`http://localhost:3000/api/users/deleteUser/${usernameToDelete}`).subscribe(
+          (response: any) => {
+              console.log('Response from deleteAccount:', response);
+              alert(`User ${usernameToDelete} has been deleted successfully.`);
+              // Refresh the page after a successful delete
+              location.reload();
+          },
+          (error: any) => {
+              console.error('Error deleting account:', error);
+              alert(`Error deleting user: ${usernameToDelete}. Please try again.`);
+          }
+      );
+  } else {
+      console.error('No username entered');
+      alert('Please enter a username to delete.');
   }
+}
+
   
   approveUser(username: string, groupName: string) {
     // Assuming you have an array to hold approved users
@@ -462,17 +541,33 @@ joinGroupRequest(groupName: string) {
         // If the response is successful
         this.approvedUsers.push(username);  // Push the username to the array
         console.log('Approved Users:', this.approvedUsers);
+        alert('User Approved');
       }, error => {
         console.error(error);
       });
   }
 
-  denyRequest(groupName: string, username: string) {
-    const group = this.groups.find(g => g.name === groupName);
-    if (group) {
-      group.requests = group.requests.filter(r => r !== username);
-      console.log('Denied request for user:', username, 'to join group:', groupName);
-    }
+  denyRequest(username: string, groupName: string) {
+    
+    const payload = { username, groupName }; // Create the payload object
+    console.log(payload); // Ensure this is correctly set
+  
+    this.http.post(`http://localhost:3000/api/groups/remove-from-requests`, payload).subscribe(
+      response => {
+        console.log('deleted user!', response); // Log the response
+        // Handle successful approval, e.g., show a message or refresh the list of requests
+        // Remove the approved request from the group.requests array
+        const group = this.groups.find(g => g.name === groupName);
+        if (group) {
+          group.requests = group.requests.filter(request => request !== username);
+        }
+        alert('User Denied');
+      },
+      error => {
+        console.error('Error deleting user', error); // Log the error
+        // Handle the error, e.g., show an error message
+      }
+    );
   }
 
   removeMember(groupName: string, username: string) {
@@ -545,44 +640,54 @@ createUser() {
   }
 }
 
-  deleteUser() {
-    const usernameToDelete = prompt('Enter the username to delete:');
-    if (usernameToDelete) {
-      this.users = this.users.filter(user => user.username !== usernameToDelete);
-      console.log('User deleted:', usernameToDelete);
-    }
-  }
 
-  promoteUser() {
-    const usernameToPromote = prompt('Enter the username to promote:');
-    if (usernameToPromote) {
-      const userToPromote = this.users.find(user => user.username === usernameToPromote);
-      if (userToPromote) {
-        if (userToPromote.role === 'chatUser') {
-          userToPromote.role = 'groupAdmin';
-          console.log('User promoted from ChatUser to GroupAdmin:', usernameToPromote);
-        } else if (userToPromote.role === 'groupAdmin') {
-          userToPromote.role = 'superAdmin';
-          console.log('User promoted from GroupAdmin to SuperAdmin:', usernameToPromote);
-        }
-      }
-    }
+promoteUser() {
+  const usernameToPromote = prompt('Enter the username to promote:'); // Prompt for username
+
+  console.log('Promote User button clicked');
+  console.log('Username to promote:', usernameToPromote);
+
+  if (usernameToPromote) {
+      this.http.patch(`http://localhost:3000/api/users/promote/${usernameToPromote}`, {}).subscribe(
+          (response: any) => {
+              console.log('Response from promote:', response);
+              alert(`User ${usernameToPromote} has been promoted.`);
+              // Optional: refresh the user list or update the UI accordingly
+          },
+          (error: any) => {
+              console.error('Error promoting user:', error);
+              alert(`User is already at it highest Role.`);
+          }
+      );
+  } else {
+      console.error('No username entered');
+      alert('Please enter a username to promote.');
   }
-  demoteUser() {
-    const usernameToDemote = prompt('Enter the username to demote:');
-    if (usernameToDemote) {
-      const userToDemote = this.users.find(user => user.username === usernameToDemote);
-      if (userToDemote) {
-        if (userToDemote.role === 'superAdmin') {
-          userToDemote.role = 'groupAdmin';
-          console.log('User Demoted', usernameToDemote);
-        } else if (userToDemote.role === 'groupAdmin') {
-          userToDemote.role = 'chatUser';
-          console.log('User Demoted:', usernameToDemote);
-        }
-      }
-    }
+}
+
+demoteUser() {
+  const usernameToDemote = prompt('Enter the username to demote:'); // Prompt for username
+
+  console.log('Demote User button clicked');
+  console.log('Username to demote:', usernameToDemote);
+
+  if (usernameToDemote) {
+      this.http.patch(`http://localhost:3000/api/users/demote/${usernameToDemote}`, {}).subscribe(
+          (response: any) => {
+              console.log('Response from demote:', response);
+              alert(`User ${usernameToDemote} has been demoted.`);
+              // Optional: refresh the user list or update the UI accordingly
+          },
+          (error: any) => {
+              console.error('Error demoting user:', error);
+              alert(`User is already at the lowest Role.`);
+          }
+      );
+  } else {
+      console.error('No username entered');
+      alert('Please enter a username to demote.');
   }
+}
 
   register() {
     const newUsername = prompt('Enter a new username:');
@@ -610,6 +715,7 @@ createUser() {
             },
             (error) => {
                 console.error('Error registering user:', error);
+                alert('User already exists.');
             }
         );
     }
@@ -647,7 +753,18 @@ createUser() {
     this.getUserData(); // Call the method here to fetch user data on initialization
     this.loadGroups(); // Load groups when the component initializes
     this.getChannels(); 
+    this.fetchGroups(); // Fetch the list of groups when the component initializes
     
+    // Fetch users when the component is initialized
+    this.http.get<any[]>('http://localhost:3000/api/users').subscribe(
+      (data) => {
+        this.users = data;
+      },
+      (error) => {
+        console.error('Error fetching users', error);
+      }
+    );
+
     // Listen for incoming messages from the server
     this.socketService.getMessages().subscribe(
       (msg: { username: string; message: string; }) => {
@@ -665,13 +782,13 @@ createUser() {
       .subscribe(
         (data) => {
           this.channels = data;
-          console.log('Channels fetched successfully:', this.channels);
         },
         (error) => {
           console.error('Error fetching channels:', error);
         }
       );
   }
+
 
 // Send a new message to the server
 sendMessage(username: string, text: string): void {
@@ -689,4 +806,41 @@ getMessages(): Observable<any> {
     // For example, you might get it from local storage or a service
     return 'username'; // Replace with actual logic to get the username
   }
+
+  deleteGroup() {
+  const groupNameToDelete = prompt('Enter the group name to delete:'); // Prompt for group name
+
+  console.log('Delete Group button clicked');
+  console.log('Group name to delete:', groupNameToDelete);
+
+  if (groupNameToDelete) {
+    this.http.delete(`http://localhost:3000/api/groups/delete/${groupNameToDelete}`).subscribe(
+      (response: any) => {
+        console.log('Response from deleteGroup:', response);
+        alert(`Group ${groupNameToDelete} has been deleted.`);
+        
+        // Update the groups list after deletion
+        this.groups = this.groups.filter(group => group.name !== groupNameToDelete); // Corrected filtering
+      },
+      (error: any) => {
+        console.error('Error deleting group:', error);
+        alert(`Error deleting group: ${groupNameToDelete}. Please try again.`);
+      }
+    );
+  } else {
+    console.error('No group name entered');
+    alert('Please enter a group name to delete.');
+  }
+}
+
+fetchGroups() {
+  this.http.get<Group[]>(`http://localhost:3000/api/groups`).subscribe(
+    (data: Group[]) => {
+      this.groups = data; // Direct assignment if data is already of type Group[]
+    },
+    (error: any) => {
+      console.error('Error fetching groups:', error);
+    }
+  );
+}
 }
